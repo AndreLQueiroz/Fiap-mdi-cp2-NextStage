@@ -251,7 +251,6 @@ LINK VIDEO YOUTUBE
 * Pagamento dentro do app
 * Notificações de pedidos
 * Sistema de favoritos
-* Dark mode
 
 ---
 
