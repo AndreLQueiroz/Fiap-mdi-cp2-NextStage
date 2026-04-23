@@ -1,55 +1,66 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { getData, saveData } from '../services/storage';
+import {
+  getAppState,
+  limparReservasApi,
+  reservarItem,
+  formatNumberToBRL,
+} from '../services/api';
 
 const AppDataContext = createContext({});
 
-const RESERVAS_KEY = '@cantina_reservas';
-
 export function AppDataProvider({ children }) {
   const [reservas, setReservas] = useState([]);
+  const [balance, setBalance] = useState(50);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
-    loadReservas();
+    loadAppData();
   }, []);
 
-  async function loadReservas() {
+  async function loadAppData() {
     try {
-      const data = await getData(RESERVAS_KEY);
-      setReservas(data || []);
+      const data = await getAppState();
+      setReservas(data.reservas || []);
+      setBalance(data.balance ?? 50);
     } catch (error) {
-      console.log('Erro ao carregar reservas:', error);
+      console.log('Erro ao carregar dados do app:', error);
     } finally {
       setLoadingData(false);
     }
   }
 
-  async function adicionarReserva(item) {
-    const novaReserva = {
-      id: Date.now().toString(),
-      nome: item.nome,
-      preco: item.preco,
-      data: new Date().toLocaleString(),
-    };
+  async function adicionarReserva(item, quantity) {
+    const result = await reservarItem(item, quantity);
 
-    const updated = [...reservas, novaReserva];
-    setReservas(updated);
-    await saveData(RESERVAS_KEY, updated);
-    return novaReserva;
+    if (result.success) {
+      setReservas(result.appState.reservas);
+      setBalance(result.appState.balance);
+    }
+
+    return result;
   }
 
   async function limparReservas() {
-    setReservas([]);
-    await saveData(RESERVAS_KEY, []);
+    const result = await limparReservasApi();
+
+    if (result.success) {
+      setReservas(result.appState.reservas);
+      setBalance(result.appState.balance);
+    }
+
+    return result;
   }
 
   return (
     <AppDataContext.Provider
       value={{
         reservas,
+        balance,
+        balanceFormatted: formatNumberToBRL(balance),
         loadingData,
         adicionarReserva,
         limparReservas,
+        recarregarDados: loadAppData,
       }}
     >
       {children}

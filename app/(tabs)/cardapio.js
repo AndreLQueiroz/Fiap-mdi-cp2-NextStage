@@ -14,9 +14,11 @@ import { COLORS } from '../../constants/colors';
 import EmptyState from '../../components/EmptyState';
 
 export default function Cardapio() {
-  const { reservas, loadingData, adicionarReserva } = useAppData();
-  const [successMessage, setSuccessMessage] = useState('');
+  const { reservas, balanceFormatted, loadingData, adicionarReserva } = useAppData();
+  const [feedback, setFeedback] = useState('');
+  const [feedbackType, setFeedbackType] = useState('success');
   const [busca, setBusca] = useState('');
+  const [quantidades, setQuantidades] = useState({});
 
   const itens = [
     {
@@ -77,12 +79,42 @@ export default function Cardapio() {
     });
   }, [busca]);
 
-  async function reservarItem(item) {
-    await adicionarReserva(item);
-    setSuccessMessage(`✅ ${item.nome} reservado com sucesso!`);
+  function getQuantidade(itemId) {
+    return quantidades[itemId] || 1;
+  }
+
+  function aumentarQuantidade(itemId) {
+    setQuantidades((prev) => ({
+      ...prev,
+      [itemId]: (prev[itemId] || 1) + 1,
+    }));
+  }
+
+  function diminuirQuantidade(itemId) {
+    setQuantidades((prev) => {
+      const atual = prev[itemId] || 1;
+      return {
+        ...prev,
+        [itemId]: atual > 1 ? atual - 1 : 1,
+      };
+    });
+  }
+
+  async function reservar(item) {
+    const quantidade = getQuantidade(item.id);
+    const result = await adicionarReserva(item, quantidade);
+
+    if (result.success) {
+      setFeedbackType('success');
+      setFeedback(`✅ ${item.nome} reservado com sucesso (${quantidade}x).`);
+      setQuantidades((prev) => ({ ...prev, [item.id]: 1 }));
+    } else {
+      setFeedbackType('error');
+      setFeedback(`⚠️ ${result.message}`);
+    }
 
     setTimeout(() => {
-      setSuccessMessage('');
+      setFeedback('');
     }, 2500);
   }
 
@@ -99,6 +131,7 @@ export default function Cardapio() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.sessao}>Mais Pedidos 🔥</Text>
       <Text style={styles.subinfo}>Reservas salvas: {reservas.length}</Text>
+      <Text style={styles.saldo}>Saldo disponível: {balanceFormatted}</Text>
 
       <TextInput
         style={styles.searchInput}
@@ -116,16 +149,42 @@ export default function Cardapio() {
             <Text style={styles.desc}>{item.desc}</Text>
             <Text style={styles.preco}>{item.preco}</Text>
 
-            <TouchableOpacity style={styles.btn} onPress={() => reservarItem(item)}>
-              <Text style={styles.btnTxt}>Reservar</Text>
-            </TouchableOpacity>
+            <View style={styles.actionsRow}>
+              <View style={styles.quantityBox}>
+                <TouchableOpacity style={styles.qtdBtn} onPress={() => diminuirQuantidade(item.id)}>
+                  <Text style={styles.qtdBtnText}>-</Text>
+                </TouchableOpacity>
+
+                <Text style={styles.qtdValue}>{getQuantidade(item.id)}</Text>
+
+                <TouchableOpacity style={styles.qtdBtn} onPress={() => aumentarQuantidade(item.id)}>
+                  <Text style={styles.qtdBtnText}>+</Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity style={styles.btn} onPress={() => reservar(item)}>
+                <Text style={styles.btnTxt}>Reservar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       ))}
 
-      {!!successMessage && (
-        <View style={styles.toast}>
-          <Text style={styles.toastTxt}>{successMessage}</Text>
+      {!!feedback && (
+        <View
+          style={[
+            styles.toast,
+            feedbackType === 'success' ? styles.toastSuccess : styles.toastError,
+          ]}
+        >
+          <Text
+            style={[
+              styles.toastTxt,
+              feedbackType === 'success' ? styles.toastTxtSuccess : styles.toastTxtError,
+            ]}
+          >
+            {feedback}
+          </Text>
         </View>
       )}
 
@@ -161,6 +220,11 @@ const styles = StyleSheet.create({
   },
   subinfo: {
     color: COLORS.textLight,
+    marginBottom: 6,
+  },
+  saldo: {
+    color: COLORS.primary,
+    fontWeight: '700',
     marginBottom: 16,
   },
   searchInput: {
@@ -183,7 +247,7 @@ const styles = StyleSheet.create({
   },
   img: {
     width: 110,
-    height: 110,
+    height: 140,
   },
   info: {
     flex: 1,
@@ -206,25 +270,66 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginBottom: 8,
   },
+  actionsRow: {
+    gap: 10,
+  },
+  quantityBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: '#F1F1F1',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  qtdBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: COLORS.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  qtdBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  qtdValue: {
+    minWidth: 30,
+    textAlign: 'center',
+    fontWeight: '700',
+    color: COLORS.text,
+  },
   btn: {
     backgroundColor: COLORS.secondary,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingVertical: 10,
+    borderRadius: 10,
     alignItems: 'center',
   },
   btnTxt: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 'bold',
   },
   toast: {
-    backgroundColor: COLORS.successBg,
     padding: 15,
     borderRadius: 12,
     marginTop: 10,
   },
+  toastSuccess: {
+    backgroundColor: COLORS.successBg,
+  },
+  toastError: {
+    backgroundColor: COLORS.errorBg,
+  },
   toastTxt: {
-    color: COLORS.success,
     fontWeight: '600',
+  },
+  toastTxtSuccess: {
+    color: COLORS.success,
+  },
+  toastTxtError: {
+    color: COLORS.error,
   },
 });

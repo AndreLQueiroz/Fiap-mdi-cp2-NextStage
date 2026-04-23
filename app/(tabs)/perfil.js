@@ -8,11 +8,11 @@ import EmptyState from '../../components/EmptyState';
 
 export default function Perfil() {
   const { user, logout } = useAuth();
-  const { reservas, limparReservas } = useAppData();
+  const { reservas, balanceFormatted, limparReservas } = useAppData();
 
   async function handleLogout() {
     await logout();
-    router.replace('/(auth)/login');
+    router.replace('/login');
   }
 
   async function handleLimparReservas() {
@@ -23,7 +23,7 @@ export default function Perfil() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.cartao}>
         <Text style={styles.cartaoLabel}>Saldo na Cantina</Text>
-        <Text style={styles.cartaoValor}>R$ 45,90</Text>
+        <Text style={styles.cartaoValor}>{balanceFormatted}</Text>
         <View style={styles.cartaoFooter}>
           <Text style={styles.cartaoUser}>{user?.nome?.toUpperCase() || 'ALUNO'}</Text>
           <Text style={styles.cartaoChip}>FIAP Card</Text>
@@ -55,18 +55,28 @@ export default function Perfil() {
           message="Assim que você reservar itens do cardápio, eles aparecerão aqui."
         />
       ) : (
-        reservas.map((reserva) => (
-          <View key={reserva.id} style={styles.reservaCard}>
-            <Text style={styles.reservaNome}>{reserva.nome}</Text>
-            <Text style={styles.reservaPreco}>{reserva.preco}</Text>
-            <Text style={styles.reservaData}>{reserva.data}</Text>
-          </View>
-        ))
+        reservas
+          .slice()
+          .reverse()
+          .map((reserva) => (
+            <View key={reserva.id} style={styles.reservaCard}>
+              <View style={styles.reservaHeader}>
+                <Text style={styles.reservaNome}>{reserva.nome}</Text>
+                <Text style={styles.reservaTotal}>{reserva.total}</Text>
+              </View>
+
+              <Text style={styles.reservaInfo}>
+                Quantidade: {reserva.quantidade} • Unitário: {reserva.precoUnitario}
+              </Text>
+
+              <Text style={styles.reservaData}>{reserva.data}</Text>
+            </View>
+          ))
       )}
 
       {reservas.length > 0 && (
         <TouchableOpacity style={styles.clearBtn} onPress={handleLimparReservas}>
-          <Text style={styles.clearBtnText}>Limpar reservas</Text>
+          <Text style={styles.clearBtnText}>Limpar reservas e restaurar saldo</Text>
         </TouchableOpacity>
       )}
 
@@ -95,7 +105,13 @@ const styles = StyleSheet.create({
   cartaoFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
   cartaoUser: { color: '#fff', fontSize: 14, letterSpacing: 1 },
   cartaoChip: { color: '#fff', fontWeight: 'bold', fontSize: 12, opacity: 0.5 },
-  listaInfo: { width: '100%', marginTop: 30 },
+  listaInfo: {
+    width: '100%',
+    marginTop: 30,
+    backgroundColor: '#FAFAFA',
+    borderRadius: 18,
+    paddingHorizontal: 16,
+  },
   itemInfo: { paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
   label: { fontSize: 12, color: '#999', textTransform: 'uppercase', marginBottom: 4 },
   valor: { fontSize: 16, color: '#333', fontWeight: '500' },
@@ -114,18 +130,28 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 10,
   },
+  reservaHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
   reservaNome: {
+    flex: 1,
     fontSize: 16,
     fontWeight: '700',
     color: COLORS.text,
   },
-  reservaPreco: {
-    marginTop: 4,
+  reservaTotal: {
     color: COLORS.primary,
-    fontWeight: '700',
+    fontWeight: '800',
+  },
+  reservaInfo: {
+    marginTop: 6,
+    color: COLORS.textLight,
+    fontSize: 13,
   },
   reservaData: {
-    marginTop: 4,
+    marginTop: 6,
     fontSize: 12,
     color: COLORS.textLight,
   },
@@ -139,6 +165,8 @@ const styles = StyleSheet.create({
   clearBtnText: {
     color: COLORS.text,
     fontWeight: '700',
+    textAlign: 'center',
+    paddingHorizontal: 10,
   },
   logoutBtn: {
     marginTop: 16,
