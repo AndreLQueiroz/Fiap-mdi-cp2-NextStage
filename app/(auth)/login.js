@@ -11,10 +11,11 @@ import { Link, router } from 'expo-router';
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import { useAuth } from '../../context/AuthContext';
-import { COLORS } from '../../constants/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function Login() {
   const { login } = useAuth();
+  const { theme } = useTheme();
 
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -59,57 +60,76 @@ export default function Login() {
       return;
     }
 
-    router.replace('/(tabs)');
+    router.replace('/');
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: COLORS.background }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Entrar</Text>
-        <Text style={styles.subtitle}>Acesse sua conta da Cantina FIAP</Text>
+    <View style={[styles.screen, { backgroundColor: theme.background }]}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView contentContainerStyle={styles.container}>
+          <Text style={[styles.title, { color: theme.text }]}>Entrar 😀</Text>
+          <Text style={[styles.subtitle, { color: theme.textLight }]}>
+            Acesse sua conta da Cantina FIAP
+          </Text>
 
-        <CustomInput
-          label="E-mail"
-          value={email}
-          onChangeText={setEmail}
-          placeholder="usuario@dominio.com"
-          keyboardType="email-address"
-          error={errors.email}
-        />
+          <CustomInput
+            label="E-mail"
+            value={email}
+            onChangeText={setEmail}
+            placeholder="usuario@dominio.com"
+            keyboardType="email-address"
+            error={errors.email}
+          />
 
-        <CustomInput
-          label="Senha"
-          value={senha}
-          onChangeText={setSenha}
-          placeholder="Digite sua senha"
-          secureTextEntry
-          error={errors.senha}
-        />
+          <CustomInput
+            label="Senha"
+            value={senha}
+            onChangeText={setSenha}
+            placeholder="Digite sua senha"
+            secureTextEntry
+            error={errors.senha}
+          />
 
-        {!!authError && <Text style={styles.authError}>{authError}</Text>}
+          {!!authError && (
+            <Text
+              style={[
+                styles.authError,
+                {
+                  backgroundColor: theme.errorBg,
+                  color: theme.error,
+                },
+              ]}
+            >
+              {authError}
+            </Text>
+          )}
 
-        <CustomButton
-          title="Entrar"
-          onPress={handleLogin}
-          disabled={!formValid}
-          loading={loading}
-        />
+          <CustomButton
+            title="Entrar"
+            onPress={handleLogin}
+            disabled={!formValid}
+            loading={loading}
+          />
 
-        <Text style={styles.footerText}>
-          Não tem conta?{' '}
-          <Link href="/(auth)/cadastro" style={styles.link}>
-            Cadastre-se
-          </Link>
-        </Text>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          <Text style={[styles.footerText, { color: theme.textLight }]}>
+            Não tem conta?{' '}
+            <Link href="/cadastro" style={[styles.link, { color: theme.primary }]}>
+              Cadastre-se
+            </Link>
+          </Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -118,17 +138,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     fontWeight: '800',
-    color: COLORS.text,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 15,
-    color: COLORS.textLight,
     marginBottom: 28,
   },
   authError: {
-    backgroundColor: COLORS.errorBg,
-    color: COLORS.error,
     padding: 12,
     borderRadius: 10,
     marginBottom: 8,
@@ -136,10 +152,8 @@ const styles = StyleSheet.create({
   footerText: {
     marginTop: 18,
     textAlign: 'center',
-    color: COLORS.textLight,
   },
   link: {
-    color: COLORS.primary,
     fontWeight: '700',
   },
 });

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
+  View,
   Text,
   StyleSheet,
   KeyboardAvoidingView,
@@ -10,10 +11,11 @@ import { Link, router } from 'expo-router';
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import { useAuth } from '../../context/AuthContext';
-import { COLORS } from '../../constants/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function Cadastro() {
   const { register } = useAuth();
+  const { theme } = useTheme();
 
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -27,9 +29,7 @@ export default function Cadastro() {
   function validate() {
     const newErrors = {};
 
-    if (!nome.trim()) {
-      newErrors.nome = 'O nome completo é obrigatório';
-    }
+    if (!nome.trim()) newErrors.nome = 'O nome completo é obrigatório';
 
     if (!email.trim()) {
       newErrors.email = 'O e-mail é obrigatório';
@@ -80,76 +80,92 @@ export default function Cadastro() {
     setSubmitMessage('Cadastro realizado com sucesso! Agora faça login.');
 
     setTimeout(() => {
-      router.replace('/(auth)/login');
+      router.replace('/login');
     }, 1200);
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: COLORS.background }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Cadastro</Text>
-        <Text style={styles.subtitle}>Crie sua conta para usar a Cantina FIAP</Text>
+    <View style={[styles.screen, { backgroundColor: theme.background }]}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView contentContainerStyle={styles.container}>
+          <Text style={[styles.title, { color: theme.text }]}>Cadastro</Text>
+          <Text style={[styles.subtitle, { color: theme.textLight }]}>
+            Crie sua conta para usar a Cantina FIAP
+          </Text>
 
-        <CustomInput
-          label="Nome completo"
-          value={nome}
-          onChangeText={setNome}
-          placeholder="Digite seu nome"
-          error={errors.nome}
-        />
+          <CustomInput
+            label="Nome completo"
+            value={nome}
+            onChangeText={setNome}
+            placeholder="Digite seu nome"
+            error={errors.nome}
+          />
 
-        <CustomInput
-          label="E-mail"
-          value={email}
-          onChangeText={setEmail}
-          placeholder="usuario@dominio.com"
-          keyboardType="email-address"
-          error={errors.email}
-        />
+          <CustomInput
+            label="E-mail"
+            value={email}
+            onChangeText={setEmail}
+            placeholder="usuario@dominio.com"
+            keyboardType="email-address"
+            error={errors.email}
+          />
 
-        <CustomInput
-          label="Senha"
-          value={senha}
-          onChangeText={setSenha}
-          placeholder="Mínimo 6 caracteres"
-          secureTextEntry
-          error={errors.senha}
-        />
+          <CustomInput
+            label="Senha"
+            value={senha}
+            onChangeText={setSenha}
+            placeholder="Mínimo 6 caracteres"
+            secureTextEntry
+            error={errors.senha}
+          />
 
-        <CustomInput
-          label="Confirmar senha"
-          value={confirmarSenha}
-          onChangeText={setConfirmarSenha}
-          placeholder="Repita sua senha"
-          secureTextEntry
-          error={errors.confirmarSenha}
-        />
+          <CustomInput
+            label="Confirmar senha"
+            value={confirmarSenha}
+            onChangeText={setConfirmarSenha}
+            placeholder="Repita sua senha"
+            secureTextEntry
+            error={errors.confirmarSenha}
+          />
 
-        {!!submitError && <Text style={styles.errorMessage}>{submitError}</Text>}
-        {!!submitMessage && <Text style={styles.successMessage}>{submitMessage}</Text>}
+          {!!submitError && (
+            <Text style={[styles.message, { backgroundColor: theme.errorBg, color: theme.error }]}>
+              {submitError}
+            </Text>
+          )}
 
-        <CustomButton
-          title="Cadastrar"
-          onPress={handleRegister}
-          disabled={!formValid}
-          loading={loading}
-        />
+          {!!submitMessage && (
+            <Text style={[styles.message, { backgroundColor: theme.successBg, color: theme.success }]}>
+              {submitMessage}
+            </Text>
+          )}
 
-        <Text style={styles.footerText}>
-          Já tem conta?{' '}
-          <Link href="/(auth)/login" style={styles.link}>
-            Entrar
-          </Link>
-        </Text>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          <CustomButton
+            title="Cadastrar"
+            onPress={handleRegister}
+            disabled={!formValid}
+            loading={loading}
+          />
+
+          <Text style={[styles.footerText, { color: theme.textLight }]}>
+            Já tem conta?{' '}
+            <Link href="/login" style={[styles.link, { color: theme.primary }]}>
+              Entrar
+            </Link>
+          </Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -158,24 +174,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     fontWeight: '800',
-    color: COLORS.text,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 15,
-    color: COLORS.textLight,
     marginBottom: 28,
   },
-  errorMessage: {
-    backgroundColor: COLORS.errorBg,
-    color: COLORS.error,
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 8,
-  },
-  successMessage: {
-    backgroundColor: COLORS.successBg,
-    color: COLORS.success,
+  message: {
     padding: 12,
     borderRadius: 10,
     marginBottom: 8,
@@ -183,10 +188,8 @@ const styles = StyleSheet.create({
   footerText: {
     marginTop: 18,
     textAlign: 'center',
-    color: COLORS.textLight,
   },
   link: {
-    color: COLORS.primary,
     fontWeight: '700',
   },
 });

@@ -10,11 +10,12 @@ import {
   TextInput,
 } from 'react-native';
 import { useAppData } from '../../context/AppDataContext';
-import { COLORS } from '../../constants/colors';
+import { useTheme } from '../../context/ThemeContext';
 import EmptyState from '../../components/EmptyState';
 
 export default function Cardapio() {
   const { reservas, balanceFormatted, loadingData, adicionarReserva } = useAppData();
+  const { theme } = useTheme();
   const [feedback, setFeedback] = useState('');
   const [feedbackType, setFeedbackType] = useState('success');
   const [busca, setBusca] = useState('');
@@ -120,50 +121,64 @@ export default function Cardapio() {
 
   if (loadingData) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={{ marginTop: 10 }}>Carregando cardápio...</Text>
+      <View style={[styles.centered, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
+        <Text style={{ marginTop: 10, color: theme.text }}>Carregando cardápio...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.sessao}>Mais Pedidos 🔥</Text>
-      <Text style={styles.subinfo}>Reservas salvas: {reservas.length}</Text>
-      <Text style={styles.saldo}>Saldo disponível: {balanceFormatted}</Text>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background }]} contentContainerStyle={styles.content}>
+      <Text style={[styles.sessao, { color: theme.text }]}>Mais Pedidos 🔥</Text>
+      <Text style={[styles.subinfo, { color: theme.textLight }]}>Reservas salvas: {reservas.length}</Text>
+      <Text style={[styles.saldo, { color: theme.primary }]}>Saldo disponível: {balanceFormatted}</Text>
 
       <TextInput
-        style={styles.searchInput}
+        style={[
+          styles.searchInput,
+          {
+            backgroundColor: theme.inputBg,
+            borderColor: theme.border,
+            color: theme.text,
+          },
+        ]}
         placeholder="Buscar item no cardápio"
+        placeholderTextColor={theme.textLight}
         value={busca}
         onChangeText={setBusca}
       />
 
       {itensFiltrados.map((item) => (
-        <View key={item.id} style={styles.card}>
+        <View key={item.id} style={[styles.card, { backgroundColor: theme.cardSoft, borderColor: theme.border }]}>
           <Image source={item.img} style={styles.img} resizeMode="cover" />
 
           <View style={styles.info}>
-            <Text style={styles.nome}>{item.nome}</Text>
-            <Text style={styles.desc}>{item.desc}</Text>
-            <Text style={styles.preco}>{item.preco}</Text>
+            <Text style={[styles.nome, { color: theme.text }]}>{item.nome}</Text>
+            <Text style={[styles.desc, { color: theme.textLight }]}>{item.desc}</Text>
+            <Text style={[styles.preco, { color: theme.primary }]}>{item.preco}</Text>
 
             <View style={styles.actionsRow}>
-              <View style={styles.quantityBox}>
-                <TouchableOpacity style={styles.qtdBtn} onPress={() => diminuirQuantidade(item.id)}>
-                  <Text style={styles.qtdBtnText}>-</Text>
+              <View style={[styles.quantityBox, { backgroundColor: theme.card }]}>
+                <TouchableOpacity
+                  style={[styles.qtdBtn, { backgroundColor: theme.secondary }]}
+                  onPress={() => diminuirQuantidade(item.id)}
+                >
+                  <Text style={[styles.qtdBtnText, { color: theme.buttonTextOnSecondary }]}>-</Text>
                 </TouchableOpacity>
 
-                <Text style={styles.qtdValue}>{getQuantidade(item.id)}</Text>
+                <Text style={[styles.qtdValue, { color: theme.text }]}>{getQuantidade(item.id)}</Text>
 
-                <TouchableOpacity style={styles.qtdBtn} onPress={() => aumentarQuantidade(item.id)}>
-                  <Text style={styles.qtdBtnText}>+</Text>
+                <TouchableOpacity
+                  style={[styles.qtdBtn, { backgroundColor: theme.secondary }]}
+                  onPress={() => aumentarQuantidade(item.id)}
+                >
+                  <Text style={[styles.qtdBtnText, { color: theme.buttonTextOnSecondary }]}>+</Text>
                 </TouchableOpacity>
               </View>
 
-              <TouchableOpacity style={styles.btn} onPress={() => reservar(item)}>
-                <Text style={styles.btnTxt}>Reservar</Text>
+              <TouchableOpacity style={[styles.btn, { backgroundColor: theme.secondary }]} onPress={() => reservar(item)}>
+                <Text style={[styles.btnTxt, { color: theme.buttonTextOnSecondary }]}>Reservar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -174,13 +189,17 @@ export default function Cardapio() {
         <View
           style={[
             styles.toast,
-            feedbackType === 'success' ? styles.toastSuccess : styles.toastError,
+            {
+              backgroundColor: feedbackType === 'success' ? theme.successBg : theme.errorBg,
+            },
           ]}
         >
           <Text
             style={[
               styles.toastTxt,
-              feedbackType === 'success' ? styles.toastTxtSuccess : styles.toastTxtError,
+              {
+                color: feedbackType === 'success' ? theme.success : theme.error,
+              },
             ]}
           >
             {feedback}
@@ -199,38 +218,14 @@ export default function Cardapio() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 30,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sessao: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 6,
-    color: COLORS.text,
-  },
-  subinfo: {
-    color: COLORS.textLight,
-    marginBottom: 6,
-  },
-  saldo: {
-    color: COLORS.primary,
-    fontWeight: '700',
-    marginBottom: 16,
-  },
+  container: { flex: 1 },
+  content: { padding: 20, paddingBottom: 30 },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  sessao: { fontSize: 22, fontWeight: 'bold', marginBottom: 6 },
+  subinfo: { marginBottom: 6 },
+  saldo: { fontWeight: '700', marginBottom: 16 },
   searchInput: {
-    backgroundColor: COLORS.white,
     borderWidth: 1,
-    borderColor: COLORS.border,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -238,46 +233,21 @@ const styles = StyleSheet.create({
   },
   card: {
     flexDirection: 'row',
-    backgroundColor: COLORS.card,
     borderRadius: 20,
     marginBottom: 15,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#eee',
   },
-  img: {
-    width: 110,
-    height: 140,
-  },
-  info: {
-    flex: 1,
-    padding: 12,
-    justifyContent: 'space-between',
-  },
-  nome: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.text,
-  },
-  desc: {
-    fontSize: 13,
-    color: '#666',
-    marginVertical: 4,
-  },
-  preco: {
-    fontSize: 18,
-    color: COLORS.primary,
-    fontWeight: '800',
-    marginBottom: 8,
-  },
-  actionsRow: {
-    gap: 10,
-  },
+  img: { width: 110, height: 140 },
+  info: { flex: 1, padding: 12, justifyContent: 'space-between' },
+  nome: { fontSize: 16, fontWeight: 'bold' },
+  desc: { fontSize: 13, marginVertical: 4 },
+  preco: { fontSize: 18, fontWeight: '800', marginBottom: 8 },
+  actionsRow: { gap: 10 },
   quantityBox: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    backgroundColor: '#F1F1F1',
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 6,
@@ -286,12 +256,10 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 8,
-    backgroundColor: COLORS.secondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   qtdBtnText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -299,16 +267,13 @@ const styles = StyleSheet.create({
     minWidth: 30,
     textAlign: 'center',
     fontWeight: '700',
-    color: COLORS.text,
   },
   btn: {
-    backgroundColor: COLORS.secondary,
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: 'center',
   },
   btnTxt: {
-    color: '#fff',
     fontSize: 13,
     fontWeight: 'bold',
   },
@@ -317,19 +282,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: 10,
   },
-  toastSuccess: {
-    backgroundColor: COLORS.successBg,
-  },
-  toastError: {
-    backgroundColor: COLORS.errorBg,
-  },
   toastTxt: {
     fontWeight: '600',
-  },
-  toastTxtSuccess: {
-    color: COLORS.success,
-  },
-  toastTxtError: {
-    color: COLORS.error,
   },
 });
