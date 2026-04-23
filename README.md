@@ -133,7 +133,6 @@ Algumas melhorias que podem ser implementadas para evolução do projeto:
 * Integração com API real (Node.js ou Spring Boot)
 * Persistência de dados em banco de dados externo
 * Implementação de sistema de pagamento
-* Modo escuro (Dark Mode)
 * Sistema de favoritos no cardápio
 * Notificações push para status de pedidos
 * Filtro de itens por categoria (bebidas, doces, salgados)
