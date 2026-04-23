@@ -1,167 +1,262 @@
-# 🍔 Cantina FIAP App
+# 🍔 NextStage Cantina FIAP
+
+Aplicativo mobile desenvolvido com **React Native + Expo** com o objetivo de modernizar a experiência da cantina da FIAP, permitindo que alunos realizem reservas de alimentos de forma rápida, prática e sem filas.
+
+---
 
 ## 📌 Sobre o Projeto
 
-O **Cantina FIAP App** é um aplicativo mobile desenvolvido em React Native com Expo, com o objetivo de melhorar a experiência dos alunos ao consumir produtos na cantina da FIAP.
+O **NextStage Cantina FIAP** resolve um problema comum no ambiente acadêmico: filas longas, falta de organização e perda de tempo na hora de comprar alimentos.
 
-### 🎯 Problema Resolvido
+A solução proposta permite que o usuário:
 
-Filas na cantina e falta de controle prático de pedidos e saldo.
-
-### 🏫 Operação Escolhida
-
-Foi escolhida a operação de **cantina/consumo interno da FIAP**, pois é uma experiência comum a todos os alunos e possui grande potencial de otimização com tecnologia.
-
-### 🚀 Funcionalidades
-
-* Visualização do cardápio
-* Reserva de itens diretamente pelo app
-* Visualização de saldo do aluno
-* Interface simples e intuitiva
-* Navegação entre telas com tabs
+* Faça login e cadastro no app
+* Visualize o cardápio
+* Reserve itens antecipadamente
+* Consulte seu histórico de reservas
+* Utilize o sistema de forma contínua com sessão persistida
 
 ---
 
-## 👥 Integrantes do Grupo
+## 🚀 Evolução do CP1 → CP2
 
-* Andre Luiz Fernandes de Queiroz - Rm554503
-* Paulo Poças - RM556080
-* Rafael Bocchi - RM557603
+No Checkpoint 2, o projeto foi evoluído com foco em tornar o app mais próximo de um produto real:
 
----
+### 🔄 Melhorias implementadas
 
-## ⚙️ Como Rodar o Projeto
-
-### 📋 Pré-requisitos
-
-* Node.js instalado
-* Expo CLI (`npm install -g expo-cli`)
-* Aplicativo **Expo Go** no celular (ou emulador)
-
-### ▶️ Passo a passo
-
-```bash
-# Clonar o repositório
-git clone https://github.com/seu-repo/cantina-fiap.git
-
-# Entrar na pasta
-cd cantina-fiap
-
-# Instalar dependências
-npm install
-
-# Rodar o projeto
-npx expo start
-```
-
-Depois:
-
-* Escaneie o QR Code com o Expo Go
-  OU
-* Rode no emulador
+* Sistema completo de autenticação
+* Persistência de dados com AsyncStorage
+* Gerenciamento de estado global com Context API
+* Validação de formulários com feedback inline
+* Proteção de rotas (acesso restrito)
+* Interface refinada e mais profissional
+* Experiência de usuário aprimorada
 
 ---
 
-## 📱 Demonstração
+## 🧩 Funcionalidades
 
-### 🖼️ Prints das Telas
+### 🔐 Autenticação
 
-#### 🏠 Tela Home
-![Tela Home](./assets/Home.png)
+* Cadastro de usuário com:
 
-#### 🍔 Tela Cardápio
-![Tela Cardápio](./assets/Cardapio.png)
+  * Nome completo
+  * E-mail válido
+  * Senha (mín. 6 caracteres)
+  * Confirmação de senha
+* Login com validação real dos dados
+* Sessão persistida (usuário continua logado)
+* Logout com limpeza de sessão
 
-#### 👤 Tela Perfil
-![Tela Perfil](./assets/Perfil.png)
+---
+
+### 🍔 Cardápio
+
+* Lista de produtos disponíveis
+* Visual com imagens, descrição e preço
+* Reserva de itens
+* Feedback visual de sucesso
+
+---
+
+### 🔎 Diferencial Implementado
+
+**Busca em tempo real no cardápio**
+
+O usuário pode buscar itens dinamicamente conforme digita, filtrando:
+
+* Nome
+* Descrição
+* Preço
+
+📌 **Justificativa:**
+Melhora significativamente a experiência do usuário, tornando a navegação mais rápida e eficiente, especialmente em cenários com muitos itens disponíveis.
+
+---
+
+### 📊 Perfil do Usuário
+
+* Exibição de dados do usuário logado
+* Quantidade de reservas realizadas
+* Histórico de reservas
+* Botão de logout
+
+---
+
+### 💾 Persistência de Dados
+
+Utilizando **AsyncStorage**, o app salva:
+
+* Dados do usuário cadastrado
+* Sessão de login
+* Reservas realizadas
+
+📌 Os dados permanecem mesmo após fechar o app.
+
 ---
 
 ## 🧠 Decisões Técnicas
 
-### 📦 Estrutura do Projeto
+### 📁 Estrutura do Projeto
 
-O projeto foi estruturado utilizando o **Expo Router**, com separação por telas:
+```bash
+app/
+  (auth)/
+    login.js
+    cadastro.js
+  (tabs)/
+    _layout.js
+    index.js
+    cardapio.js
+    perfil.js
+  _layout.js
+  index.js
 
-* `index` → Home
-* `cardapio` → Lista de produtos
-* `perfil` → Informações do usuário
+components/
+  CustomInput.js
+  CustomButton.js
+  EmptyState.js
 
-### ⚛️ Hooks Utilizados
+context/
+  AuthContext.js
+  AppDataContext.js
 
-* `useState`
+services/
+  storage.js
 
-  * Controle de estado para pedidos (ex: reserva de item)
-  * Atualização dinâmica da interface
-
-### 🧭 Navegação
-
-* Implementada com **Expo Router (Tabs)**
-* Três abas principais:
-
-  * Home
-  * Cardápio
-  * Perfil
-
-### 🎨 Estilização
-
-* Utilização de `StyleSheet` nativo do React Native
-* Design focado em simplicidade e experiência do usuário
-* Uso de cores consistentes (ex: destaque em rosa FIAP)
+constants/
+  colors.js
+```
 
 ---
 
-## 🔮 Próximas Evoluções do Projeto
+### 🔐 AuthContext
 
-Para tornar o aplicativo mais completo e próximo de um sistema real de produção, as seguintes melhorias foram planejadas:
+Responsável por:
 
-### 💾 Persistência de Dados
-- Implementação de armazenamento local com **AsyncStorage**
-- Evolução para backend com **API REST (Node.js ou Spring Boot)**
-- Sincronização de pedidos em tempo real
+* Armazenar usuário logado
+* Funções de login e logout
+* Controle de sessão
 
-### 🛒 Sistema de Pedidos Real
-- Envio de pedidos diretamente para a cantina
-- Status do pedido (em preparo, pronto, retirado)
-- Redução de filas físicas
+---
 
-### 📊 Histórico e Controle
-- Histórico de compras do usuário
-- Controle de gastos dentro do app
-- Relatórios simples de consumo
+### 📦 AppDataContext
 
-### 💳 Pagamentos
-- Integração com pagamento digital (PIX ou cartão)
-- Débito automático do saldo do aluno
+Responsável por:
 
-### 🔐 Autenticação
-- Sistema de login do aluno
-- Integração com dados institucionais (RM)
-- Segurança básica com tokens
+* Gerenciar reservas
+* Persistir dados no AsyncStorage
+* Compartilhar dados entre telas
 
-### 🔔 Notificações
-- Notificação quando o pedido estiver pronto
-- Avisos de promoções da cantina
+---
 
-### ⚡ Melhorias de UX/UI
-- Feedback visual ao adicionar itens
-- Animações simples (loading, confirmação)
-- Melhor organização do cardápio (categorias)
+### 🧭 Navegação Protegida
 
-### 📡 Integração com IoT (diferencial)
-- Integração com sistemas físicos da cantina
-- Possível uso de sensores ou painéis para retirada de pedidos
+* Usuários não autenticados são redirecionados para `/login`
+* Telas principais só são acessíveis após login
+
+---
+
+### 💾 AsyncStorage
+
+Utilizado para:
+
+* Persistência de sessão
+* Armazenamento de usuário
+* Armazenamento de reservas
+
+---
+
+## 🎨 UX/UI
+
+O design foi pensado para garantir:
+
+* Hierarquia visual clara
+* Paleta de cores consistente
+* Feedback visual (sucesso, erro, loading)
+* Espaçamento adequado
+* Interface intuitiva
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+* React Native
+* Expo
+* Expo Router
+* AsyncStorage
+* Context API
+* JavaScript
+
+---
+
+## ▶️ Como Rodar o Projeto
+
+### Pré-requisitos:
+
+* Node.js instalado
+* Expo CLI
+* Expo Go (celular) ou emulador
+
+### Passos:
+
+```bash
+git clone https://github.com/seu-usuario/fiap-mdi-cp2-nextstage
+cd fiap-mdi-cp2-nextstage
+
+npm install
+
+npx expo start
+```
+
+---
+
+## 📸 Demonstração Visual
+
+* Print da tela de Login
+* Print da tela de Cadastro
+* Print da Home
+* Print do Cardápio
+* Print do Perfil
+
+Exemplo:
+
+```
+/assets/screens/login.png
+/assets/screens/cardapio.png
+```
+
+---
+
+## 🎥 Demonstração em Vídeo
+
+```
+LINK VIDEO YOUTUBE
+```
+
+---
+
+## 👥 Integrantes
+
+* Andre Luiz Fernandes de Queiroz - Rm554503
+* Paulo Poças - Rm556080
+* Rafael Bocchi - Rm557603
+
+
+---
+
+## 🔮 Próximos Passos
+
+* Integração com backend real
+* Pagamento dentro do app
+* Notificações de pedidos
+* Sistema de favoritos
+* Dark mode
 
 ---
 
 ## 📌 Considerações Finais
 
-O projeto demonstra a aplicação prática de conceitos de:
-
-* Componentes React Native
-* Hooks
-* Navegação com Expo Router
-* Estruturação de aplicações mobile
-
-Além disso, resolve um problema real do cotidiano dos alunos da FIAP.
+O projeto demonstra a evolução de um MVP para um sistema mais robusto, com foco em experiência do usuário, arquitetura escalável e boas práticas de desenvolvimento.
 
 ---
