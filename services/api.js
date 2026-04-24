@@ -152,13 +152,6 @@ export async function reservarItem(item, quantity = 1) {
     };
   }
 
-  if (appState.balance < total) {
-    return {
-      success: false,
-      message: 'Saldo insuficiente para realizar esta reserva.',
-    };
-  }
-
   const novaReserva = {
     id: Date.now().toString(),
     nome: item.nome,
@@ -168,11 +161,11 @@ export async function reservarItem(item, quantity = 1) {
     total: formatNumberToBRL(total),
     totalNumero: total,
     data: new Date().toLocaleString(),
+    status: 'Pendente',
   };
 
   const updatedState = {
     ...appState,
-    balance: Number((appState.balance - total).toFixed(2)),
     reservas: [...appState.reservas, novaReserva],
   };
 
@@ -181,6 +174,59 @@ export async function reservarItem(item, quantity = 1) {
   return {
     success: true,
     reserva: novaReserva,
+    appState: updatedState,
+  };
+}
+
+export async function confirmarCompraApi(reservaId) {
+  await wait();
+
+  const appState = await getAppState();
+
+  const reserva = appState.reservas.find((item) => item.id === reservaId);
+
+  if (!reserva) {
+    return {
+      success: false,
+      message: 'Reserva não encontrada.',
+    };
+  }
+
+  if (reserva.status === 'Confirmado') {
+    return {
+      success: false,
+      message: 'Essa compra já foi confirmada.',
+    };
+  }
+
+  if (appState.balance < reserva.totalNumero) {
+    return {
+      success: false,
+      message: 'Saldo insuficiente para confirmar a compra.',
+    };
+  }
+
+  const reservasAtualizadas = appState.reservas.map((item) =>
+    item.id === reservaId
+      ? {
+          ...item,
+          status: 'Confirmado',
+          confirmadoEm: new Date().toLocaleString(),
+        }
+      : item
+  );
+
+  const updatedState = {
+    ...appState,
+    balance: Number((appState.balance - reserva.totalNumero).toFixed(2)),
+    reservas: reservasAtualizadas,
+  };
+
+  await saveData(APP_STATE_KEY, updatedState);
+
+  return {
+    success: true,
+    message: 'Compra confirmada com sucesso.',
     appState: updatedState,
   };
 }
@@ -204,7 +250,7 @@ export async function adicionarSaldoApi(valor) {
     valorNumero: valorNumerico,
     data: new Date().toLocaleString(),
     status: 'Aprovado',
-    metodo: 'Recarga simulada',
+    metodo: 'Recarga via App',
   };
 
   const updatedState = {
@@ -228,9 +274,13 @@ export async function limparReservasApi() {
 
   const appState = await getAppState();
 
+  const totalConfirmado = appState.reservas
+    .filter((reserva) => reserva.status === 'Confirmado')
+    .reduce((acc, reserva) => acc + reserva.totalNumero, 0);
+
   const updatedState = {
     ...appState,
-    balance: INITIAL_BALANCE,
+    balance: Number((appState.balance + totalConfirmado).toFixed(2)),
     reservas: [],
   };
 

@@ -5,6 +5,7 @@ import {
   reservarItem,
   formatNumberToBRL,
   adicionarSaldoApi,
+  confirmarCompraApi,
 } from '../services/api';
 
 const AppDataContext = createContext({});
@@ -35,6 +36,18 @@ export function AppDataProvider({ children }) {
 
   async function adicionarReserva(item, quantity) {
     const result = await reservarItem(item, quantity);
+
+    if (result.success) {
+      setReservas(result.appState.reservas || []);
+      setPagamentos(result.appState.pagamentos || []);
+      setBalance(result.appState.balance);
+    }
+
+    return result;
+  }
+
+  async function confirmarCompra(reservaId) {
+    const result = await confirmarCompraApi(reservaId);
 
     if (result.success) {
       setReservas(result.appState.reservas || []);
@@ -78,6 +91,7 @@ export function AppDataProvider({ children }) {
         balanceFormatted: formatNumberToBRL(balance),
         loadingData,
         adicionarReserva,
+        confirmarCompra,
         adicionarSaldo,
         limparReservas,
         recarregarDados: loadAppData,
