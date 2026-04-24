@@ -144,6 +144,10 @@ npx expo start
 ![Perfil](./assets/PerfilApp.png)
 ---
 
+## 📷 Link Demonstrativo
+
+![Demo](https://i.picasion.com/pic93/cc274ac410fb037f2ba5357d4bbe9013.gif)
+
 ## 🚀 Melhorias Futuras
 
 Algumas melhorias que podem ser implementadas para evolução do projeto:
