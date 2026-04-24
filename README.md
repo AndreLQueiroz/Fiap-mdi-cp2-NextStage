@@ -121,20 +121,27 @@ npx expo start
 
 * Tela de login
 
-![Home](./assets/homedoApp.png)
+![Login](./assets/Login.png)
 
 * Tela de cadastro
 
-![Cardápio](./assets/CardapioApp.png)
+![Cadastro](./assets/Cadastro.png)
+
+* Home
+
+![Home](./assets/homedoApp.png)
 
 * Cardápio
+
+![Cardápio](./assets/CardapiodoApp.png)
+
+* Pagamentos
 
 ![Pagamentos](./assets/PagamentosApp.png)
 
 * Perfil com saldo e histórico
 
 ![Perfil](./assets/PerfilApp.png)
-
 ---
 
 ## 🚀 Melhorias Futuras
