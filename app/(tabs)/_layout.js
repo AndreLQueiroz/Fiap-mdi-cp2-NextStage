@@ -1,20 +1,14 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../context/ThemeContext';
+import { COLORS } from '../../constants/colors';
 
 export default function Layout() {
-  const { theme } = useTheme();
-
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: theme.primary,
-        tabBarInactiveTintColor: theme.textLight,
-        tabBarStyle: {
-          backgroundColor: theme.tabBg,
-          borderTopColor: theme.border,
-        },
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: '#999',
       }}
     >
       <Tabs.Screen
@@ -24,6 +18,7 @@ export default function Layout() {
           tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
         }}
       />
+
       <Tabs.Screen
         name="cardapio"
         options={{
@@ -31,6 +26,15 @@ export default function Layout() {
           tabBarIcon: ({ color }) => <Ionicons name="fast-food" size={24} color={color} />,
         }}
       />
+
+      <Tabs.Screen
+        name="pagamentos"
+        options={{
+          title: 'Pagamentos',
+          tabBarIcon: ({ color }) => <Ionicons name="card" size={24} color={color} />,
+        }}
+      />
+
       <Tabs.Screen
         name="perfil"
         options={{

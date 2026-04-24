@@ -11,4 +11,5 @@ export const COLORS = {
   error: '#D32F2F',
   errorBg: '#FDECEC',
   card: '#F9F9F9',
+  
 };

@@ -23,7 +23,7 @@ function parsePriceToNumber(price) {
 }
 
 function formatNumberToBRL(value) {
-  return `R$ ${value.toFixed(2).replace('.', ',')}`;
+  return `R$ ${Number(value).toFixed(2).replace('.', ',')}`;
 }
 
 export async function registerUser({ nome, email, senha }) {
@@ -59,6 +59,7 @@ export async function registerUser({ nome, email, senha }) {
     await saveData(APP_STATE_KEY, {
       balance: INITIAL_BALANCE,
       reservas: [],
+      pagamentos: [],
     });
   }
 
@@ -119,11 +120,18 @@ export async function logoutUser() {
 export async function getAppState() {
   const appState = await getData(APP_STATE_KEY);
 
-  if (appState) return appState;
+  if (appState) {
+    return {
+      balance: appState.balance ?? INITIAL_BALANCE,
+      reservas: appState.reservas || [],
+      pagamentos: appState.pagamentos || [],
+    };
+  }
 
   const initialState = {
     balance: INITIAL_BALANCE,
     reservas: [],
+    pagamentos: [],
   };
 
   await saveData(APP_STATE_KEY, initialState);
@@ -163,6 +171,7 @@ export async function reservarItem(item, quantity = 1) {
   };
 
   const updatedState = {
+    ...appState,
     balance: Number((appState.balance - total).toFixed(2)),
     reservas: [...appState.reservas, novaReserva],
   };
@@ -176,10 +185,51 @@ export async function reservarItem(item, quantity = 1) {
   };
 }
 
+export async function adicionarSaldoApi(valor) {
+  await wait();
+
+  const appState = await getAppState();
+  const valorNumerico = Number(valor);
+
+  if (!valorNumerico || valorNumerico <= 0) {
+    return {
+      success: false,
+      message: 'Informe um valor válido.',
+    };
+  }
+
+  const novoPagamento = {
+    id: Date.now().toString(),
+    valor: formatNumberToBRL(valorNumerico),
+    valorNumero: valorNumerico,
+    data: new Date().toLocaleString(),
+    status: 'Aprovado',
+    metodo: 'Recarga simulada',
+  };
+
+  const updatedState = {
+    ...appState,
+    balance: Number((appState.balance + valorNumerico).toFixed(2)),
+    pagamentos: [...appState.pagamentos, novoPagamento],
+  };
+
+  await saveData(APP_STATE_KEY, updatedState);
+
+  return {
+    success: true,
+    appState: updatedState,
+    pagamento: novoPagamento,
+    message: `Saldo adicionado com sucesso: ${formatNumberToBRL(valorNumerico)}`,
+  };
+}
+
 export async function limparReservasApi() {
   await wait();
 
+  const appState = await getAppState();
+
   const updatedState = {
+    ...appState,
     balance: INITIAL_BALANCE,
     reservas: [],
   };

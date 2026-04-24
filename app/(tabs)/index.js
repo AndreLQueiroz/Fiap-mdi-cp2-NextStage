@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useAppData } from '../../context/AppDataContext';
 import { useTheme } from '../../context/ThemeContext';
+import { COLORS } from '../../constants/colors';
 
 export default function Home() {
   const router = useRouter();
@@ -62,9 +63,22 @@ export default function Home() {
             <Ionicons name="time" size={24} color={theme.primary} />
             <Text style={[styles.cardTextoPequeno, { color: theme.text }]}>Reservas</Text>
           </TouchableOpacity>
+
+          <View style={styles.linha}>
+            <TouchableOpacity style={styles.cardPequeno} onPress={() => router.push('/perfil')}>
+              <Ionicons name="wallet" size={24} color={COLORS.primary} />
+           <Text style={styles.cardTextoPequeno}>Perfil</Text>
+      </TouchableOpacity>
+
+          <TouchableOpacity style={styles.cardPequeno} onPress={() => router.push('/pagamentos')}>
+              <Ionicons name="card" size={24} color={COLORS.primary} />
+                <Text style={styles.cardTextoPequeno}>Pagamentos</Text>
+           </TouchableOpacity>
+</View>
         </View>
       </View>
     </View>
+    
   );
 }
 

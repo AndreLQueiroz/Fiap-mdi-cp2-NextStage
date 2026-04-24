@@ -4,12 +4,14 @@ import {
   limparReservasApi,
   reservarItem,
   formatNumberToBRL,
+  adicionarSaldoApi,
 } from '../services/api';
 
 const AppDataContext = createContext({});
 
 export function AppDataProvider({ children }) {
   const [reservas, setReservas] = useState([]);
+  const [pagamentos, setPagamentos] = useState([]);
   const [balance, setBalance] = useState(50);
   const [loadingData, setLoadingData] = useState(true);
 
@@ -20,7 +22,9 @@ export function AppDataProvider({ children }) {
   async function loadAppData() {
     try {
       const data = await getAppState();
+
       setReservas(data.reservas || []);
+      setPagamentos(data.pagamentos || []);
       setBalance(data.balance ?? 50);
     } catch (error) {
       console.log('Erro ao carregar dados do app:', error);
@@ -33,7 +37,20 @@ export function AppDataProvider({ children }) {
     const result = await reservarItem(item, quantity);
 
     if (result.success) {
-      setReservas(result.appState.reservas);
+      setReservas(result.appState.reservas || []);
+      setPagamentos(result.appState.pagamentos || []);
+      setBalance(result.appState.balance);
+    }
+
+    return result;
+  }
+
+  async function adicionarSaldo(valor) {
+    const result = await adicionarSaldoApi(valor);
+
+    if (result.success) {
+      setReservas(result.appState.reservas || []);
+      setPagamentos(result.appState.pagamentos || []);
       setBalance(result.appState.balance);
     }
 
@@ -44,7 +61,8 @@ export function AppDataProvider({ children }) {
     const result = await limparReservasApi();
 
     if (result.success) {
-      setReservas(result.appState.reservas);
+      setReservas(result.appState.reservas || []);
+      setPagamentos(result.appState.pagamentos || []);
       setBalance(result.appState.balance);
     }
 
@@ -55,10 +73,12 @@ export function AppDataProvider({ children }) {
     <AppDataContext.Provider
       value={{
         reservas,
+        pagamentos,
         balance,
         balanceFormatted: formatNumberToBRL(balance),
         loadingData,
         adicionarReserva,
+        adicionarSaldo,
         limparReservas,
         recarregarDados: loadAppData,
       }}
