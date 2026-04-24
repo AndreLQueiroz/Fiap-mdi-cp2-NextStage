@@ -15,36 +15,25 @@ export function ThemeProvider({ children }) {
   }, []);
 
   async function loadTheme() {
-    try {
-      const savedTheme = await getData(THEME_KEY);
+    const savedTheme = await getData(THEME_KEY);
 
-      if (savedTheme && typeof savedTheme.isDark === 'boolean') {
-        setIsDark(savedTheme.isDark);
-      }
-    } catch (error) {
-      console.log('Erro ao carregar tema:', error);
-    } finally {
-      setLoadingTheme(false);
+    if (savedTheme && typeof savedTheme.isDark === 'boolean') {
+      setIsDark(savedTheme.isDark);
     }
+
+    setLoadingTheme(false);
   }
 
   async function toggleTheme() {
-    const nextValue = !isDark;
-    setIsDark(nextValue);
-    await saveData(THEME_KEY, { isDark: nextValue });
+    const nextTheme = !isDark;
+    setIsDark(nextTheme);
+    await saveData(THEME_KEY, { isDark: nextTheme });
   }
 
   const theme = isDark ? darkTheme : lightTheme;
 
   return (
-    <ThemeContext.Provider
-      value={{
-        theme,
-        isDark,
-        toggleTheme,
-        loadingTheme,
-      }}
-    >
+    <ThemeContext.Provider value={{ theme, isDark, toggleTheme, loadingTheme }}>
       {children}
     </ThemeContext.Provider>
   );

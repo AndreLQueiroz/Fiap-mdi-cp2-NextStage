@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { useAppData } from '../../context/AppDataContext';
-import { COLORS } from '../../constants/colors';
+import { useTheme } from '../../context/ThemeContext';
 import EmptyState from '../../components/EmptyState';
 
 export default function Perfil() {
   const { user, logout } = useAuth();
   const { reservas, balanceFormatted, limparReservas, confirmarCompra } = useAppData();
+  const { theme, isDark, toggleTheme } = useTheme();
 
   const [feedback, setFeedback] = useState('');
   const [feedbackType, setFeedbackType] = useState('success');
@@ -24,6 +25,9 @@ export default function Perfil() {
     if (result.success) {
       setFeedbackType('success');
       setFeedback('Reservas limpas com sucesso.');
+    } else {
+      setFeedbackType('error');
+      setFeedback('Erro ao limpar reservas.');
     }
 
     setTimeout(() => setFeedback(''), 2500);
@@ -44,8 +48,11 @@ export default function Perfil() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.cartao}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      contentContainerStyle={styles.content}
+    >
+      <View style={[styles.cartao, { backgroundColor: theme.primary }]}>
         <Text style={styles.cartaoLabel}>Saldo na Cantina</Text>
         <Text style={styles.cartaoValor}>{balanceFormatted}</Text>
 
@@ -55,20 +62,45 @@ export default function Perfil() {
         </View>
       </View>
 
-      <View style={styles.listaInfo}>
-        <View style={styles.itemInfo}>
-          <Text style={styles.label}>Nome</Text>
-          <Text style={styles.valor}>{user?.nome || 'Não informado'}</Text>
+      <View
+        style={[
+          styles.themeBox,
+          {
+            backgroundColor: theme.card,
+            borderColor: theme.border,
+          },
+        ]}
+      >
+        <Text style={[styles.themeTitle, { color: theme.text }]}>
+          {isDark ? 'Modo escuro ativado' : 'Modo claro ativado'}
+        </Text>
+
+        <Switch
+          value={isDark}
+          onValueChange={toggleTheme}
+          trackColor={{ false: '#CCC', true: theme.primary }}
+          thumbColor="#fff"
+        />
+      </View>
+
+      <View style={[styles.listaInfo, { backgroundColor: theme.card }]}>
+        <View style={[styles.itemInfo, { borderBottomColor: theme.border }]}>
+          <Text style={[styles.label, { color: theme.textLight }]}>Nome</Text>
+          <Text style={[styles.valor, { color: theme.text }]}>
+            {user?.nome || 'Não informado'}
+          </Text>
         </View>
 
-        <View style={styles.itemInfo}>
-          <Text style={styles.label}>E-mail</Text>
-          <Text style={styles.valor}>{user?.email || 'Não informado'}</Text>
+        <View style={[styles.itemInfo, { borderBottomColor: theme.border }]}>
+          <Text style={[styles.label, { color: theme.textLight }]}>E-mail</Text>
+          <Text style={[styles.valor, { color: theme.text }]}>
+            {user?.email || 'Não informado'}
+          </Text>
         </View>
 
-        <View style={styles.itemInfo}>
-          <Text style={styles.label}>Reservas realizadas</Text>
-          <Text style={styles.valor}>{reservas.length}</Text>
+        <View style={[styles.itemInfo, { borderBottomColor: theme.border }]}>
+          <Text style={[styles.label, { color: theme.textLight }]}>Reservas realizadas</Text>
+          <Text style={[styles.valor, { color: theme.text }]}>{reservas.length}</Text>
         </View>
       </View>
 
@@ -76,13 +108,18 @@ export default function Perfil() {
         <View
           style={[
             styles.feedbackBox,
-            feedbackType === 'success' ? styles.feedbackSuccess : styles.feedbackError,
+            {
+              backgroundColor:
+                feedbackType === 'success' ? theme.successBg : theme.errorBg,
+            },
           ]}
         >
           <Text
             style={[
               styles.feedbackText,
-              feedbackType === 'success' ? styles.feedbackTextSuccess : styles.feedbackTextError,
+              {
+                color: feedbackType === 'success' ? theme.success : theme.error,
+              },
             ]}
           >
             {feedback}
@@ -90,7 +127,9 @@ export default function Perfil() {
         </View>
       )}
 
-      <Text style={styles.sectionTitle}>Histórico de reservas</Text>
+      <Text style={[styles.sectionTitle, { color: theme.text }]}>
+        Histórico de reservas
+      </Text>
 
       {reservas.length === 0 ? (
         <EmptyState
@@ -102,27 +141,43 @@ export default function Perfil() {
           .slice()
           .reverse()
           .map((reserva) => (
-            <View key={reserva.id} style={styles.reservaCard}>
+            <View
+              key={reserva.id}
+              style={[
+                styles.reservaCard,
+                {
+                  backgroundColor: theme.card,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
               <View style={styles.reservaHeader}>
-                <Text style={styles.reservaNome}>{reserva.nome}</Text>
-                <Text style={styles.reservaTotal}>{reserva.total}</Text>
+                <Text style={[styles.reservaNome, { color: theme.text }]}>
+                  {reserva.nome}
+                </Text>
+
+                <Text style={[styles.reservaTotal, { color: theme.primary }]}>
+                  {reserva.total}
+                </Text>
               </View>
 
-              <Text style={styles.reservaInfo}>
+              <Text style={[styles.reservaInfo, { color: theme.textLight }]}>
                 Quantidade: {reserva.quantidade} • Unitário: {reserva.precoUnitario}
               </Text>
 
-              <Text style={styles.reservaData}>Reservado em: {reserva.data}</Text>
+              <Text style={[styles.reservaData, { color: theme.textLight }]}>
+                Reservado em: {reserva.data}
+              </Text>
 
               {reserva.status === 'Confirmado' && (
-                <Text style={styles.reservaData}>
+                <Text style={[styles.reservaData, { color: theme.textLight }]}>
                   Confirmado em: {reserva.confirmadoEm || 'Não informado'}
                 </Text>
               )}
 
               {reserva.status === 'Pendente' && (
                 <TouchableOpacity
-                  style={styles.confirmBtn}
+                  style={[styles.confirmBtn, { backgroundColor: theme.primary }]}
                   onPress={() => handleConfirmarCompra(reserva.id)}
                 >
                   <Text style={styles.confirmBtnText}>Confirmar compra</Text>
@@ -130,8 +185,15 @@ export default function Perfil() {
               )}
 
               {reserva.status === 'Confirmado' && (
-                <View style={styles.confirmadoBadge}>
-                  <Text style={styles.confirmadoText}>Compra confirmada</Text>
+                <View
+                  style={[
+                    styles.confirmadoBadge,
+                    { backgroundColor: theme.successBg },
+                  ]}
+                >
+                  <Text style={[styles.confirmadoText, { color: theme.success }]}>
+                    Compra confirmada
+                  </Text>
                 </View>
               )}
             </View>
@@ -139,13 +201,34 @@ export default function Perfil() {
       )}
 
       {reservas.length > 0 && (
-        <TouchableOpacity style={styles.clearBtn} onPress={handleLimparReservas}>
-          <Text style={styles.clearBtnText}>Limpar reservas</Text>
+        <TouchableOpacity
+          style={[
+            styles.clearBtn,
+            {
+              backgroundColor: theme.card,
+              borderColor: theme.border,
+            },
+          ]}
+          onPress={handleLimparReservas}
+        >
+          <Text style={[styles.clearBtnText, { color: theme.text }]}>
+            Limpar reservas
+          </Text>
         </TouchableOpacity>
       )}
 
-      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Sair da conta</Text>
+      <TouchableOpacity
+        style={[styles.logoutBtn, { backgroundColor: theme.secondary }]}
+        onPress={handleLogout}
+      >
+        <Text
+          style={[
+            styles.logoutText,
+            { color: theme.mode === 'dark' ? '#0F1115' : '#fff' },
+          ]}
+        >
+          Sair da conta
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -154,7 +237,6 @@ export default function Perfil() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
 
   content: {
@@ -165,7 +247,6 @@ const styles = StyleSheet.create({
   cartao: {
     width: '100%',
     height: 200,
-    backgroundColor: COLORS.primary,
     borderRadius: 25,
     padding: 25,
     justifyContent: 'space-between',
@@ -204,10 +285,26 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
 
+  themeBox: {
+    marginTop: 18,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  themeTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    flex: 1,
+    paddingRight: 10,
+  },
+
   listaInfo: {
     width: '100%',
-    marginTop: 30,
-    backgroundColor: '#FAFAFA',
+    marginTop: 24,
     borderRadius: 18,
     paddingHorizontal: 16,
   },
@@ -215,19 +312,16 @@ const styles = StyleSheet.create({
   itemInfo: {
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
 
   label: {
     fontSize: 12,
-    color: '#999',
     textTransform: 'uppercase',
     marginBottom: 4,
   },
 
   valor: {
     fontSize: 16,
-    color: '#333',
     fontWeight: '500',
   },
 
@@ -237,24 +331,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 
-  feedbackSuccess: {
-    backgroundColor: COLORS.successBg,
-  },
-
-  feedbackError: {
-    backgroundColor: COLORS.errorBg,
-  },
-
   feedbackText: {
     fontWeight: '700',
-  },
-
-  feedbackTextSuccess: {
-    color: COLORS.success,
-  },
-
-  feedbackTextError: {
-    color: COLORS.error,
   },
 
   sectionTitle: {
@@ -262,13 +340,10 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     fontSize: 18,
     fontWeight: '700',
-    color: COLORS.text,
   },
 
   reservaCard: {
-    backgroundColor: '#FAFAFA',
     borderWidth: 1,
-    borderColor: '#EEE',
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
@@ -284,29 +359,24 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: '700',
-    color: COLORS.text,
   },
 
   reservaTotal: {
-    color: COLORS.primary,
     fontWeight: '800',
   },
 
   reservaInfo: {
     marginTop: 6,
-    color: COLORS.textLight,
     fontSize: 13,
   },
 
   reservaData: {
     marginTop: 6,
     fontSize: 12,
-    color: COLORS.textLight,
   },
 
   confirmBtn: {
     marginTop: 12,
-    backgroundColor: COLORS.primary,
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: 'center',
@@ -319,7 +389,6 @@ const styles = StyleSheet.create({
 
   confirmadoBadge: {
     marginTop: 12,
-    backgroundColor: COLORS.successBg,
     paddingVertical: 8,
     paddingHorizontal: 10,
     borderRadius: 999,
@@ -327,21 +396,19 @@ const styles = StyleSheet.create({
   },
 
   confirmadoText: {
-    color: COLORS.success,
     fontWeight: '700',
     fontSize: 12,
   },
 
   clearBtn: {
     marginTop: 12,
-    backgroundColor: '#EEE',
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
+    borderWidth: 1,
   },
 
   clearBtnText: {
-    color: COLORS.text,
     fontWeight: '700',
     textAlign: 'center',
     paddingHorizontal: 10,
@@ -349,14 +416,12 @@ const styles = StyleSheet.create({
 
   logoutBtn: {
     marginTop: 16,
-    backgroundColor: COLORS.secondary,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
   },
 
   logoutText: {
-    color: '#fff',
     fontWeight: '700',
     fontSize: 16,
   },

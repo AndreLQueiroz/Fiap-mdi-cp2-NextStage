@@ -10,11 +10,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppData } from '../../context/AppDataContext';
-import { COLORS } from '../../constants/colors';
+import { useTheme } from '../../context/ThemeContext';
 import EmptyState from '../../components/EmptyState';
 
 export default function Pagamentos() {
   const { balanceFormatted, pagamentos, adicionarSaldo, loadingData } = useAppData();
+  const { theme } = useTheme();
 
   const [valor, setValor] = useState('');
   const [feedback, setFeedback] = useState('');
@@ -24,12 +25,12 @@ export default function Pagamentos() {
   const valoresRapidos = [10, 20, 50, 100];
 
   function parseValor(texto) {
-    const valorTratado = String(texto)
-      .replace('R$', '')
-      .replace(/\s/g, '')
-      .replace(',', '.');
-
-    return Number(valorTratado);
+    return Number(
+      String(texto)
+        .replace('R$', '')
+        .replace(/\s/g, '')
+        .replace(',', '.')
+    );
   }
 
   async function handleAdicionarSaldo(valorSelecionado) {
@@ -55,62 +56,93 @@ export default function Pagamentos() {
 
   if (loadingData) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Carregando pagamentos...</Text>
+      <View style={[styles.centered, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
+        <Text style={[styles.loadingText, { color: theme.textLight }]}>
+          Carregando pagamentos...
+        </Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      contentContainerStyle={styles.content}
+    >
       <View style={styles.header}>
-        <Ionicons name="card-outline" size={44} color={COLORS.primary} />
-        <Text style={styles.title}>Pagamentos</Text>
-        <Text style={styles.subtitle}>
+        <Ionicons name="card-outline" size={44} color={theme.primary} />
+        <Text style={[styles.title, { color: theme.text }]}>Pagamentos</Text>
+        <Text style={[styles.subtitle, { color: theme.textLight }]}>
           Adicione saldo para reservar produtos na cantina.
         </Text>
       </View>
 
-      <View style={styles.balanceCard}>
+      <View style={[styles.balanceCard, { backgroundColor: theme.primary }]}>
         <Text style={styles.balanceLabel}>Saldo atual</Text>
         <Text style={styles.balanceValue}>{balanceFormatted}</Text>
       </View>
 
-      <Text style={styles.sectionTitle}>Adicionar saldo rápido</Text>
+      <Text style={[styles.sectionTitle, { color: theme.text }]}>
+        Adicionar saldo rápido
+      </Text>
 
       <View style={styles.quickGrid}>
         {valoresRapidos.map((item) => (
           <TouchableOpacity
             key={item}
-            style={styles.quickButton}
+            style={[
+              styles.quickButton,
+              { backgroundColor: theme.card, borderColor: theme.border },
+            ]}
             onPress={() => handleAdicionarSaldo(item)}
             disabled={loading}
           >
-            <Text style={styles.quickButtonText}>R$ {item},00</Text>
+            <Text style={[styles.quickButtonText, { color: theme.primary }]}>
+              R$ {item},00
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <Text style={styles.sectionTitle}>Outro valor</Text>
+      <Text style={[styles.sectionTitle, { color: theme.text }]}>Outro valor</Text>
 
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: theme.inputBg,
+            borderColor: theme.border,
+            color: theme.text,
+          },
+        ]}
         placeholder="Ex: 25,50"
+        placeholderTextColor={theme.textLight}
         keyboardType="numeric"
         value={valor}
         onChangeText={setValor}
       />
 
       <TouchableOpacity
-        style={[styles.mainButton, loading && styles.disabledButton]}
+        style={[
+          styles.mainButton,
+          { backgroundColor: theme.secondary },
+          loading && styles.disabledButton,
+        ]}
         onPress={() => handleAdicionarSaldo()}
         disabled={loading}
       >
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.mainButtonText}>Adicionar saldo</Text>
+          <Text
+            style={[
+              styles.mainButtonText,
+              { color: theme.mode === 'dark' ? '#0F1115' : '#fff' },
+            ]}
+          >
+            Adicionar saldo
+          </Text>
         )}
       </TouchableOpacity>
 
@@ -118,13 +150,18 @@ export default function Pagamentos() {
         <View
           style={[
             styles.feedbackBox,
-            feedbackType === 'success' ? styles.feedbackSuccess : styles.feedbackError,
+            {
+              backgroundColor:
+                feedbackType === 'success' ? theme.successBg : theme.errorBg,
+            },
           ]}
         >
           <Text
             style={[
               styles.feedbackText,
-              feedbackType === 'success' ? styles.feedbackTextSuccess : styles.feedbackTextError,
+              {
+                color: feedbackType === 'success' ? theme.success : theme.error,
+              },
             ]}
           >
             {feedback}
@@ -132,7 +169,9 @@ export default function Pagamentos() {
         </View>
       )}
 
-      <Text style={styles.sectionTitle}>Histórico de pagamentos</Text>
+      <Text style={[styles.sectionTitle, { color: theme.text }]}>
+        Histórico de pagamentos
+      </Text>
 
       {pagamentos.length === 0 ? (
         <EmptyState
@@ -144,18 +183,32 @@ export default function Pagamentos() {
           .slice()
           .reverse()
           .map((pagamento) => (
-            <View key={pagamento.id} style={styles.paymentCard}>
+            <View
+              key={pagamento.id}
+              style={[
+                styles.paymentCard,
+                { backgroundColor: theme.card, borderColor: theme.border },
+              ]}
+            >
               <View style={styles.paymentHeader}>
                 <View>
-                  <Text style={styles.paymentMethod}>{pagamento.metodo}</Text>
-                  <Text style={styles.paymentDate}>{pagamento.data}</Text>
+                  <Text style={[styles.paymentMethod, { color: theme.text }]}>
+                    {pagamento.metodo}
+                  </Text>
+                  <Text style={[styles.paymentDate, { color: theme.textLight }]}>
+                    {pagamento.data}
+                  </Text>
                 </View>
 
-                <Text style={styles.paymentValue}>{pagamento.valor}</Text>
+                <Text style={[styles.paymentValue, { color: theme.primary }]}>
+                  {pagamento.valor}
+                </Text>
               </View>
 
-              <View style={styles.statusBadge}>
-                <Text style={styles.statusText}>{pagamento.status}</Text>
+              <View style={[styles.statusBadge, { backgroundColor: theme.successBg }]}>
+                <Text style={[styles.statusText, { color: theme.success }]}>
+                  {pagamento.status}
+                </Text>
               </View>
             </View>
           ))
@@ -165,24 +218,14 @@ export default function Pagamentos() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  content: {
-    padding: 22,
-    paddingBottom: 40,
-  },
+  container: { flex: 1 },
+  content: { padding: 22, paddingBottom: 40 },
   centered: {
     flex: 1,
-    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  loadingText: {
-    marginTop: 10,
-    color: COLORS.textLight,
-  },
+  loadingText: { marginTop: 10 },
   header: {
     marginTop: 28,
     marginBottom: 24,
@@ -190,17 +233,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     fontWeight: '800',
-    color: COLORS.text,
     marginTop: 10,
   },
   subtitle: {
-    color: COLORS.textLight,
     fontSize: 15,
     marginTop: 6,
     lineHeight: 22,
   },
   balanceCard: {
-    backgroundColor: COLORS.primary,
     borderRadius: 24,
     padding: 24,
     marginBottom: 26,
@@ -218,7 +258,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: COLORS.text,
     marginBottom: 14,
     marginTop: 8,
   },
@@ -230,22 +269,17 @@ const styles = StyleSheet.create({
   },
   quickButton: {
     width: '47%',
-    backgroundColor: '#F9F9F9',
     borderRadius: 16,
     paddingVertical: 18,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#EEE',
   },
   quickButtonText: {
-    color: COLORS.primary,
     fontWeight: '800',
     fontSize: 16,
   },
   input: {
-    backgroundColor: '#F9F9F9',
     borderWidth: 1,
-    borderColor: '#EEE',
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 13,
@@ -253,7 +287,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   mainButton: {
-    backgroundColor: COLORS.secondary,
     paddingVertical: 15,
     borderRadius: 14,
     alignItems: 'center',
@@ -263,7 +296,6 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   mainButtonText: {
-    color: '#fff',
     fontWeight: '800',
     fontSize: 15,
   },
@@ -272,25 +304,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 18,
   },
-  feedbackSuccess: {
-    backgroundColor: COLORS.successBg,
-  },
-  feedbackError: {
-    backgroundColor: COLORS.errorBg,
-  },
   feedbackText: {
     fontWeight: '700',
   },
-  feedbackTextSuccess: {
-    color: COLORS.success,
-  },
-  feedbackTextError: {
-    color: COLORS.error,
-  },
   paymentCard: {
-    backgroundColor: '#FAFAFA',
     borderWidth: 1,
-    borderColor: '#EEE',
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -303,28 +321,23 @@ const styles = StyleSheet.create({
   paymentMethod: {
     fontSize: 15,
     fontWeight: '800',
-    color: COLORS.text,
   },
   paymentDate: {
-    color: COLORS.textLight,
     fontSize: 12,
     marginTop: 4,
   },
   paymentValue: {
-    color: COLORS.primary,
     fontWeight: '900',
     fontSize: 16,
   },
   statusBadge: {
     alignSelf: 'flex-start',
     marginTop: 12,
-    backgroundColor: COLORS.successBg,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
   },
   statusText: {
-    color: COLORS.success,
     fontWeight: '800',
     fontSize: 12,
   },
