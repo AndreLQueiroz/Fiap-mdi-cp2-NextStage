@@ -120,9 +120,20 @@ npx expo start
 ## 📸 Evidências do Funcionamento
 
 * Tela de login
+
+![Home](./assets/homedoApp.png)
+
 * Tela de cadastro
+
+![Cardápio](./assets/CardapioApp.png)
+
 * Cardápio
+
+![Pagamentos](./assets/PagamentosApp.png)
+
 * Perfil com saldo e histórico
+
+![Perfil](./assets/PerfilApp.png)
 
 ---
 
