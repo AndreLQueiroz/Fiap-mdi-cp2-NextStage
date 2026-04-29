@@ -146,7 +146,7 @@ npx expo start
 
 ## 📷 Link Demonstrativo
 
-<img src="https://i.picasion.com/pic93/cc274ac410fb037f2ba5357d4bbe9013.gif" width="600"/>
+
 
 ## 🚀 Melhorias Futuras
 
@@ -171,3 +171,4 @@ O projeto atende aos requisitos propostos, implementando um fluxo completo de au
 * Andre Luiz Fernandes de Queiroz - Rm554503
 * Paulo Poças - Rm556080
 * Rafael Bocchi - Rm557603
+* Milena Codinhoto - Rm554682
