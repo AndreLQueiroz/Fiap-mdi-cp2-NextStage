@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, Image } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
@@ -58,11 +58,12 @@ export default function Perfil() {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.header}>
-        <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
-          <Text style={styles.avatarText}>
-            {user?.nome?.charAt(0)?.toUpperCase() || 'A'}
-          </Text>
-        </View>
+        <View style={styles.avatar}>
+  <Image
+    source={require('../../assets/avatar.webp')}
+    style={styles.avatarImage}
+  />
+</View>
 
         <Text style={[styles.name, { color: theme.text }]}>
           {user?.nome || 'Aluno'}
@@ -269,16 +270,16 @@ const styles = StyleSheet.create({
   avatar: {
     width: 78,
     height: 78,
-    borderRadius: 26,
+    borderRadius: 39,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 14,
+    overflow: 'hidden',
   },
 
-  avatarText: {
-    color: '#fff',
-    fontSize: 34,
-    fontWeight: '900',
+  avatarImage: {
+    width: '100%',
+  height: '100%',
   },
 
   name: {
