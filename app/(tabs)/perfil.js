@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useAppData } from '../../context/AppDataContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -8,11 +9,14 @@ import EmptyState from '../../components/EmptyState';
 
 export default function Perfil() {
   const { user, logout } = useAuth();
-  const { reservas, balanceFormatted, limparReservas, confirmarCompra } = useAppData();
+  const { reservas, limparReservas, confirmarCompra } = useAppData();
   const { theme, isDark, toggleTheme } = useTheme();
 
   const [feedback, setFeedback] = useState('');
   const [feedbackType, setFeedbackType] = useState('success');
+
+  const reservasPendentes = reservas.filter((item) => item.status === 'Pendente').length;
+  const reservasConfirmadas = reservas.filter((item) => item.status === 'Confirmado').length;
 
   async function handleLogout() {
     await logout();
@@ -51,29 +55,60 @@ export default function Perfil() {
     <ScrollView
       style={[styles.container, { backgroundColor: theme.background }]}
       contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
     >
-      <View style={[styles.cartao, { backgroundColor: theme.primary }]}>
-        <Text style={styles.cartaoLabel}>Saldo na Cantina</Text>
-        <Text style={styles.cartaoValor}>{balanceFormatted}</Text>
+      <View style={styles.header}>
+        <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
+          <Text style={styles.avatarText}>
+            {user?.nome?.charAt(0)?.toUpperCase() || 'A'}
+          </Text>
+        </View>
 
-        <View style={styles.cartaoFooter}>
-          <Text style={styles.cartaoUser}>{user?.nome?.toUpperCase() || 'ALUNO'}</Text>
-          <Text style={styles.cartaoChip}>FIAP Card</Text>
+        <Text style={[styles.name, { color: theme.text }]}>
+          {user?.nome || 'Aluno'}
+        </Text>
+
+        <Text style={[styles.email, { color: theme.textLight }]}>
+          {user?.email || 'E-mail não informado'}
+        </Text>
+      </View>
+
+      <View style={styles.statsRow}>
+        <View style={[styles.statBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Text style={[styles.statNumber, { color: theme.text }]}>{reservas.length}</Text>
+          <Text style={[styles.statLabel, { color: theme.textLight }]}>Reservas</Text>
+        </View>
+
+        <View style={[styles.statBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Text style={[styles.statNumber, { color: theme.primary }]}>{reservasPendentes}</Text>
+          <Text style={[styles.statLabel, { color: theme.textLight }]}>Pendentes</Text>
+        </View>
+
+        <View style={[styles.statBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Text style={[styles.statNumber, { color: theme.success }]}>{reservasConfirmadas}</Text>
+          <Text style={[styles.statLabel, { color: theme.textLight }]}>Confirmadas</Text>
         </View>
       </View>
 
-      <View
-        style={[
-          styles.themeBox,
-          {
-            backgroundColor: theme.card,
-            borderColor: theme.border,
-          },
-        ]}
-      >
-        <Text style={[styles.themeTitle, { color: theme.text }]}>
-          {isDark ? 'Modo escuro ativado' : 'Modo claro ativado'}
-        </Text>
+      <View style={[styles.preferenceCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+        <View style={styles.preferenceLeft}>
+          <View style={[styles.preferenceIcon, { backgroundColor: theme.cardSoft }]}>
+            <Ionicons
+              name={isDark ? 'moon' : 'sunny'}
+              size={22}
+              color={theme.primary}
+            />
+          </View>
+
+          <View>
+            <Text style={[styles.preferenceTitle, { color: theme.text }]}>
+              Aparência
+            </Text>
+            <Text style={[styles.preferenceText, { color: theme.textLight }]}>
+              {isDark ? 'Modo escuro ativado' : 'Modo claro ativado'}
+            </Text>
+          </View>
+        </View>
 
         <Switch
           value={isDark}
@@ -81,27 +116,6 @@ export default function Perfil() {
           trackColor={{ false: '#CCC', true: theme.primary }}
           thumbColor="#fff"
         />
-      </View>
-
-      <View style={[styles.listaInfo, { backgroundColor: theme.card }]}>
-        <View style={[styles.itemInfo, { borderBottomColor: theme.border }]}>
-          <Text style={[styles.label, { color: theme.textLight }]}>Nome</Text>
-          <Text style={[styles.valor, { color: theme.text }]}>
-            {user?.nome || 'Não informado'}
-          </Text>
-        </View>
-
-        <View style={[styles.itemInfo, { borderBottomColor: theme.border }]}>
-          <Text style={[styles.label, { color: theme.textLight }]}>E-mail</Text>
-          <Text style={[styles.valor, { color: theme.text }]}>
-            {user?.email || 'Não informado'}
-          </Text>
-        </View>
-
-        <View style={[styles.itemInfo, { borderBottomColor: theme.border }]}>
-          <Text style={[styles.label, { color: theme.textLight }]}>Reservas realizadas</Text>
-          <Text style={[styles.valor, { color: theme.text }]}>{reservas.length}</Text>
-        </View>
       </View>
 
       {!!feedback && (
@@ -127,9 +141,17 @@ export default function Perfil() {
         </View>
       )}
 
-      <Text style={[styles.sectionTitle, { color: theme.text }]}>
-        Histórico de reservas
-      </Text>
+      <View style={styles.sectionHeader}>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>
+          Minhas reservas
+        </Text>
+
+        {reservas.length > 0 && (
+          <TouchableOpacity onPress={handleLimparReservas}>
+            <Text style={[styles.clearText, { color: theme.primary }]}>Limpar</Text>
+          </TouchableOpacity>
+        )}
+      </View>
 
       {reservas.length === 0 ? (
         <EmptyState
@@ -151,19 +173,21 @@ export default function Perfil() {
                 },
               ]}
             >
-              <View style={styles.reservaHeader}>
-                <Text style={[styles.reservaNome, { color: theme.text }]}>
-                  {reserva.nome}
-                </Text>
+              <View style={styles.reservaTop}>
+                <View style={styles.reservaTitleArea}>
+                  <Text style={[styles.reservaNome, { color: theme.text }]}>
+                    {reserva.nome}
+                  </Text>
+
+                  <Text style={[styles.reservaInfo, { color: theme.textLight }]}>
+                    {reserva.quantidade}x • Unitário: {reserva.precoUnitario}
+                  </Text>
+                </View>
 
                 <Text style={[styles.reservaTotal, { color: theme.primary }]}>
                   {reserva.total}
                 </Text>
               </View>
-
-              <Text style={[styles.reservaInfo, { color: theme.textLight }]}>
-                Quantidade: {reserva.quantidade} • Unitário: {reserva.precoUnitario}
-              </Text>
 
               <Text style={[styles.reservaData, { color: theme.textLight }]}>
                 Reservado em: {reserva.data}
@@ -175,60 +199,52 @@ export default function Perfil() {
                 </Text>
               )}
 
-              {reserva.status === 'Pendente' && (
-                <TouchableOpacity
-                  style={[styles.confirmBtn, { backgroundColor: theme.primary }]}
-                  onPress={() => handleConfirmarCompra(reserva.id)}
-                >
-                  <Text style={styles.confirmBtnText}>Confirmar compra</Text>
-                </TouchableOpacity>
-              )}
-
-              {reserva.status === 'Confirmado' && (
+              <View style={styles.reservaFooter}>
                 <View
                   style={[
-                    styles.confirmadoBadge,
-                    { backgroundColor: theme.successBg },
+                    styles.statusBadge,
+                    {
+                      backgroundColor:
+                        reserva.status === 'Confirmado'
+                          ? theme.successBg
+                          : theme.errorBg,
+                    },
                   ]}
                 >
-                  <Text style={[styles.confirmadoText, { color: theme.success }]}>
-                    Compra confirmada
+                  <Text
+                    style={[
+                      styles.statusText,
+                      {
+                        color:
+                          reserva.status === 'Confirmado'
+                            ? theme.success
+                            : theme.error,
+                      },
+                    ]}
+                  >
+                    {reserva.status}
                   </Text>
                 </View>
-              )}
+
+                {reserva.status === 'Pendente' && (
+                  <TouchableOpacity
+                    style={[styles.confirmBtn, { backgroundColor: theme.primary }]}
+                    onPress={() => handleConfirmarCompra(reserva.id)}
+                  >
+                    <Text style={styles.confirmBtnText}>Confirmar compra</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
           ))
       )}
 
-      {reservas.length > 0 && (
-        <TouchableOpacity
-          style={[
-            styles.clearBtn,
-            {
-              backgroundColor: theme.card,
-              borderColor: theme.border,
-            },
-          ]}
-          onPress={handleLimparReservas}
-        >
-          <Text style={[styles.clearBtnText, { color: theme.text }]}>
-            Limpar reservas
-          </Text>
-        </TouchableOpacity>
-      )}
-
       <TouchableOpacity
-        style={[styles.logoutBtn, { backgroundColor: theme.secondary }]}
+        style={[styles.logoutBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
         onPress={handleLogout}
       >
-        <Text
-          style={[
-            styles.logoutText,
-            { color: theme.mode === 'dark' ? '#0F1115' : '#fff' },
-          ]}
-        >
-          Sair da conta
-        </Text>
+        <Ionicons name="log-out-outline" size={20} color={theme.error} />
+        <Text style={[styles.logoutText, { color: theme.error }]}>Sair da conta</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -240,189 +256,210 @@ const styles = StyleSheet.create({
   },
 
   content: {
-    padding: 25,
+    padding: 22,
     paddingBottom: 40,
   },
 
-  cartao: {
-    width: '100%',
-    height: 200,
-    borderRadius: 25,
-    padding: 25,
-    justifyContent: 'space-between',
-    elevation: 12,
-    marginTop: 20,
+  header: {
+    marginTop: 35,
+    alignItems: 'center',
+    marginBottom: 24,
   },
 
-  cartaoLabel: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 14,
-    fontWeight: '600',
+  avatar: {
+    width: 78,
+    height: 78,
+    borderRadius: 26,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 14,
   },
 
-  cartaoValor: {
+  avatarText: {
     color: '#fff',
-    fontSize: 38,
-    fontWeight: 'bold',
+    fontSize: 34,
+    fontWeight: '900',
   },
 
-  cartaoFooter: {
+  name: {
+    fontSize: 26,
+    fontWeight: '900',
+    textAlign: 'center',
+  },
+
+  email: {
+    marginTop: 5,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+
+  statsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
+    gap: 12,
+    marginBottom: 18,
   },
 
-  cartaoUser: {
-    color: '#fff',
-    fontSize: 14,
-    letterSpacing: 1,
-  },
-
-  cartaoChip: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 12,
-    opacity: 0.5,
-  },
-
-  themeBox: {
-    marginTop: 18,
+  statBox: {
+    flex: 1,
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 18,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+
+  statNumber: {
+    fontSize: 24,
+    fontWeight: '900',
+  },
+
+  statLabel: {
+    fontSize: 12,
+    marginTop: 3,
+  },
+
+  preferenceCard: {
+    borderWidth: 1,
+    borderRadius: 20,
     padding: 16,
+    marginBottom: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
 
-  themeTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+  preferenceLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
-    paddingRight: 10,
+    gap: 12,
   },
 
-  listaInfo: {
-    width: '100%',
-    marginTop: 24,
-    borderRadius: 18,
-    paddingHorizontal: 16,
+  preferenceIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
-  itemInfo: {
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-  },
-
-  label: {
-    fontSize: 12,
-    textTransform: 'uppercase',
-    marginBottom: 4,
-  },
-
-  valor: {
+  preferenceTitle: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '900',
+  },
+
+  preferenceText: {
+    marginTop: 3,
+    fontSize: 13,
   },
 
   feedbackBox: {
     padding: 14,
-    borderRadius: 12,
-    marginTop: 20,
+    borderRadius: 14,
+    marginBottom: 18,
   },
 
   feedbackText: {
-    fontWeight: '700',
+    fontWeight: '800',
+  },
+
+  sectionHeader: {
+    marginTop: 6,
+    marginBottom: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 
   sectionTitle: {
-    marginTop: 30,
-    marginBottom: 14,
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 20,
+    fontWeight: '900',
+  },
+
+  clearText: {
+    fontWeight: '800',
   },
 
   reservaCard: {
     borderWidth: 1,
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 10,
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 12,
   },
 
-  reservaHeader: {
+  reservaTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 10,
+    gap: 12,
+  },
+
+  reservaTitleArea: {
+    flex: 1,
   },
 
   reservaNome: {
-    flex: 1,
     fontSize: 16,
-    fontWeight: '700',
-  },
-
-  reservaTotal: {
-    fontWeight: '800',
+    fontWeight: '900',
   },
 
   reservaInfo: {
-    marginTop: 6,
+    marginTop: 5,
     fontSize: 13,
   },
 
+  reservaTotal: {
+    fontSize: 16,
+    fontWeight: '900',
+  },
+
   reservaData: {
-    marginTop: 6,
+    marginTop: 8,
     fontSize: 12,
   },
 
-  confirmBtn: {
-    marginTop: 12,
-    paddingVertical: 10,
-    borderRadius: 10,
+  reservaFooter: {
+    marginTop: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 12,
+  },
+
+  statusBadge: {
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+  },
+
+  statusText: {
+    fontSize: 12,
+    fontWeight: '900',
+  },
+
+  confirmBtn: {
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    borderRadius: 999,
   },
 
   confirmBtnText: {
     color: '#fff',
-    fontWeight: '700',
-  },
-
-  confirmadoBadge: {
-    marginTop: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 999,
-    alignSelf: 'flex-start',
-  },
-
-  confirmadoText: {
-    fontWeight: '700',
+    fontWeight: '900',
     fontSize: 12,
-  },
-
-  clearBtn: {
-    marginTop: 12,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-  },
-
-  clearBtnText: {
-    fontWeight: '700',
-    textAlign: 'center',
-    paddingHorizontal: 10,
   },
 
   logoutBtn: {
     marginTop: 16,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 8,
   },
 
   logoutText: {
-    fontWeight: '700',
-    fontSize: 16,
+    fontWeight: '900',
+    fontSize: 15,
   },
 });

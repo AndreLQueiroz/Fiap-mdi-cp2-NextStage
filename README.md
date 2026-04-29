@@ -146,7 +146,11 @@ npx expo start
 
 ## 📷 Link Demonstrativo
 
+<<<<<<< HEAD
 
+=======
+https://youtu.be/90GUCsCiqyQ
+>>>>>>> 4a65be71cbcdfcaa98ef2cc33ef4c92c06be97e8
 
 ## 🚀 Melhorias Futuras
 
